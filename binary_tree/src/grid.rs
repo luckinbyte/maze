@@ -1,3 +1,4 @@
+use rand::Rng;
 
 pub struct Guid{
     row :u32,
@@ -15,6 +16,23 @@ impl Guid {
         }
         let links = Vec::new();
         Guid{row, col, cells, links}
+    }
+
+    pub fn binary_tree_rand(&mut self) -> (){
+        for i in 0..self.col-1{
+            self.link(self.row-1, i, 1);
+        }
+        for i in 0..self.row-1{
+            self.link(i, self.col-1, 2);
+        }
+        for i in 0..self.row-1{
+            for j in 0..self.col-1{
+                if !self.is_link(i,j){
+                    let direction = rand::thread_rng().gen_range(1..3);
+                    self.link(i, j, direction);
+                }
+            }
+        }
     }
 
     pub fn is_link(&self, row:u32, col:u32) -> bool{

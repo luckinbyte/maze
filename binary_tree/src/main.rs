@@ -1,9 +1,11 @@
 mod grid;
 
 fn main() {
-    let mut g = grid::Guid::new(5,5);
-    g.link(1, 1, 1);
-    g.link(0, 0, 1);
+    let row = 6;
+    let col = 6;
+    let mut g = grid::Guid::new(row,col);
+    g.binary_tree_rand();
     g.draw();
 }
+
 
