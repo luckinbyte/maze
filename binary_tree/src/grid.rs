@@ -1,4 +1,5 @@
 use rand::Rng;
+use std::collections::HashMap;
 
 pub struct Guid{
     row :u32,
@@ -23,29 +24,71 @@ impl Guid {
             self.link(self.row-1, i, 1);
         }
         for i in 0..self.row-1{
-            self.link(i, self.col-1, 2);
+            self.link(i, self.col-1, 4);
         }
         for i in 0..self.row-1{
             for j in 0..self.col-1{
                 if !self.is_link(i,j){
                     let direction = rand::thread_rng().gen_range(1..3);
-                    self.link(i, j, direction);
+                    if direction==1{
+                        self.link(i, j, direction);
+                    }else{
+                        self.link(i, j, 4);
+                    }
+                    
                 }
             }
         }
     }
 
-    pub fn is_link(&self, row:u32, col:u32) -> bool{
+    pub fn sidewinder_rand(&mut self) -> (){
+        for i in 0..self.col-1{
+            self.link(self.row-1, i, 1);
+        }
+        for i in 0..self.row-1{
+            let mut to_north:Vec<(u32,u32)> = Vec::new();
+            let mut to_rand_len = 0;
+            for j in 0..self.col{
+                let direction = rand::thread_rng().gen_range(1..3);
+                match direction{
+                    1 if (j!=self.col-1) =>{
+                        self.link(i, j, 1);
+                        to_north.push((i,j));
+                        to_rand_len += 1;
+                    }
+                    _ =>{
+                        to_north.push((i,j));
+                        to_rand_len += 1;
+                        let rand_num = rand::thread_rng().gen_range(0..to_rand_len);
+                        let (northi, northj) = to_north[rand_num];
+                        self.link(northi, northj, 4);
+                        to_north = Vec::new();
+                        to_rand_len = 0;
+                    }
+                }
+            }
+        }
+    }
+
+    fn is_link(&self, row:u32, col:u32) -> bool{
         self.links.contains(&(row,col))
     }
 
-    pub fn link(&mut self, row:u32, col:u32, direction:u32) {
+    fn link(&mut self, row:u32, col:u32, direction:u32) {
         self.links.push((row,col));
         match direction{
             1 => {
                 self.cells.get_mut((row*self.col+col) as usize).unwrap().link(1);
                 self.cells.get_mut((row*self.col+col+1) as usize).unwrap().link(3);
             },
+            2 => {
+                self.cells.get_mut((row*self.col+col) as usize).unwrap().link(2);
+                self.cells.get_mut((row*self.col+col-self.col) as usize).unwrap().link(4);                
+            },
+            3 => {
+                self.cells.get_mut((row*self.col+col) as usize).unwrap().link(3);
+                self.cells.get_mut((row*self.col+col-1) as usize).unwrap().link(1);                
+            }
             _ =>{
                 self.cells.get_mut((row*self.col+col) as usize).unwrap().link(4);
                 self.cells.get_mut((row*self.col+col+self.col) as usize).unwrap().link(2);
